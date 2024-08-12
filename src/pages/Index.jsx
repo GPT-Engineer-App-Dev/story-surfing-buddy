@@ -30,12 +30,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-red-500 p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Top 100 Hacker News Stories</h1>
+    <div className="min-h-screen bg-blue-500 p-8">
+      <h1 className="text-4xl font-bold mb-8 text-center text-white">Top 100 Hacker News Stories</h1>
       <Input
         type="text"
         placeholder="Search stories..."
-        className="mb-8 max-w-md mx-auto"
+        className="mb-8 max-w-md mx-auto bg-white text-blue-900"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
