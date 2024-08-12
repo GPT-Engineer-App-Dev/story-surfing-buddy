@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Search, Clock, User } from "lucide-react";
+import { motion } from "framer-motion";
 
 const fetchHNStories = async () => {
   const response = await fetch(
@@ -11,7 +12,11 @@ const fetchHNStories = async () => {
   if (!response.ok) {
     throw new Error("Failed to fetch stories");
   }
-  return response.json();
+  const data = await response.json();
+  return data.hits.map(story => ({
+    ...story,
+    timeAgo: new Date(story.created_at).toLocaleString()
+  }));
 };
 
 const Index = () => {
@@ -21,7 +26,7 @@ const Index = () => {
     queryFn: fetchHNStories,
   });
 
-  const filteredStories = data?.hits.filter((story) =>
+  const filteredStories = data?.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -30,49 +35,65 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-blue-500 p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center text-white">Top 100 Hacker News Stories</h1>
-      <Input
-        type="text"
-        placeholder="Search stories..."
-        className="mb-8 max-w-md mx-auto bg-white text-blue-900"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading
-          ? Array.from({ length: 9 }).map((_, index) => (
-              <Card key={index} className="animate-pulse">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8">
+      <h1 className="text-5xl font-bold mb-8 text-center text-white drop-shadow-lg">
+        Top 100 Hacker News Stories
+      </h1>
+      <div className="relative mb-8 max-w-md mx-auto">
+        <Input
+          type="text"
+          placeholder="Search stories..."
+          className="pl-10 pr-4 py-2 w-full bg-white/90 backdrop-blur-sm text-blue-900 rounded-full shadow-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500" />
+      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+        </div>
+      ) : (
+        <motion.div
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {filteredStories?.map((story) => (
+            <motion.div
+              key={story.objectID}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="h-6 bg-gray-300 rounded"></CardTitle>
+                  <CardTitle className="text-lg text-blue-800">{story.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))
-          : filteredStories?.map((story) => (
-              <Card key={story.objectID}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{story.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-blue-600 mb-2 flex items-center">
+                    <User className="mr-1 h-4 w-4" /> {story.author}
+                  </p>
+                  <p className="text-sm text-blue-600 mb-2 flex items-center">
+                    <Clock className="mr-1 h-4 w-4" /> {story.timeAgo}
+                  </p>
+                  <p className="text-sm text-blue-700 font-semibold mb-4">
                     Upvotes: {story.points}
                   </p>
                   <a
                     href={story.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline inline-flex items-center"
+                    className="text-blue-500 hover:text-blue-700 inline-flex items-center transition-colors duration-200"
                   >
                     Read More <ExternalLink className="ml-1 h-4 w-4" />
                   </a>
                 </CardContent>
               </Card>
-            ))}
-      </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
     </div>
   );
 };
