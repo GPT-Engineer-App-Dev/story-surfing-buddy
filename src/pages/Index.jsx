@@ -30,7 +30,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-red-500 p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Top 100 Hacker News Stories</h1>
       <Input
         type="text"
